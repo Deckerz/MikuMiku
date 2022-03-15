@@ -3,6 +3,7 @@ using DataAccess.Data;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace mikumiku.Services;
@@ -12,12 +13,16 @@ public class CommandHandler
     private readonly DiscordSocketClient _client;
     private readonly CommandService _commands;
     private readonly IServiceProvider _services;
+    private readonly string _defaultPrefix;
 
     public CommandHandler(IServiceProvider services, CommandService commands, DiscordSocketClient client)
     {
         _commands = commands;
         _services = services;
         _client = client;
+
+        var config = _services.GetService<IConfiguration>();
+        _defaultPrefix = config != null ? config.GetSection("DefaultPrefix").Value : "!";
     }
 
     public async Task InitializeAsync()
@@ -46,7 +51,7 @@ public class CommandHandler
         if (msg is not SocketUserMessage { Source: MessageSource.User } message) return;
         if (message.Channel is not SocketGuildChannel channel) return;
 
-        var prefix = await prefixDb.GetServerPrefix((long)channel.Guild.Id) ?? "!";
+        var prefix = await prefixDb.GetServerPrefix((long)channel.Guild.Id) ?? _defaultPrefix;
 
         var argPos = 0;
         if (!message.HasStringPrefix(prefix, ref argPos))

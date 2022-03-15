@@ -14,10 +14,10 @@ namespace mikumiku
         public static void Main(string[] args)
         {
             DotNetEnv.Env.Load();
-            new Program().MainAsync().GetAwaiter().GetResult();
+            MainAsync().GetAwaiter().GetResult();
         }
 
-        private async Task MainAsync()
+        private static async Task MainAsync()
         {
             await using var services = ConfigureServices();
 
